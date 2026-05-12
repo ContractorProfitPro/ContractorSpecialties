@@ -36,3 +36,7 @@ Route::post('/join/magic-link', function () {
     // Logic will go here to generate the token and fire the email
     return back()->with('status', 'Magic link sent!');
 })->name('onboarding.magic');
+
+Route::get('/pro/apex-roofing', function () {
+    return view('directory.profile');
+});
