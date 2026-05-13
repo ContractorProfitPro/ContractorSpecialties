@@ -21,14 +21,15 @@
 </head>
 <body class="bg-[#FFFFFF] text-[#4A4E55] antialiased selection:bg-[#F15A29] selection:text-white flex flex-col min-h-screen">
     
-    <!-- Navigation -->
-    <nav class="bg-[#1E2A38] shadow-md border-b border-[#4A4E55]/20">
+    <!-- Navigation: Updated to #021d48 to seamlessly blend with the logo -->
+    <nav class="bg-[#021d48] shadow-md border-b border-[#4A4E55]/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <span class="text-2xl font-black tracking-tight text-white">
-                        Contractor<span class="text-[#F15A29]">Specialties</span>
-                    </span>
+            <div class="flex justify-between h-24"> 
+                <div class="flex items-center py-2">
+                    <!-- Brand Logo Image -->
+                    <a href="/" class="flex items-center">
+                        <img src="{{ asset('images/logo.webp') }}" alt="Contractor Specialties Logo" class="h-16 w-auto object-contain">
+                    </a>
                 </div>
                 <div class="flex items-center space-x-6">
                     <a href="/directory" class="text-gray-300 hover:text-white font-semibold transition-colors duration-200">Find a Specialist</a>
@@ -42,6 +43,12 @@
 
     <!-- Hero Section -->
     <main class="flex-grow flex items-center justify-center relative overflow-hidden bg-[#FFFFFF] border-b border-gray-100">
+        
+        <!-- Subtle Logo Watermark in Background -->
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 opacity-5 pointer-events-none hidden lg:block">
+            <img src="{{ asset('images/logo.webp') }}" alt="" class="h-[600px] w-auto object-contain grayscale mix-blend-multiply">
+        </div>
+
         <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
             <div class="text-center max-w-4xl mx-auto">
                 <span class="inline-block py-1 px-3 rounded-full bg-[#1E2A38]/5 text-[#1E2A38] text-sm font-bold tracking-wide uppercase mb-6 border border-[#1E2A38]/10">
@@ -114,11 +121,14 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-[#1E2A38] border-t border-[#4A4E55]/30 mt-auto">
+    <!-- Footer: Updated to #021d48 to seamlessly blend with the logo -->
+    <footer class="bg-[#021d48] border-t border-[#4A4E55]/30 mt-auto">
         <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-            <div class="text-[#4A4E55] text-sm mb-4 md:mb-0">
-                &copy; {{ date('Y') }} Contractor Specialties. The standard of excellence.
+            <div class="flex flex-col items-center md:items-start mb-4 md:mb-0">
+                <img src="{{ asset('images/logo.webp') }}" alt="Contractor Specialties" class="h-10 w-auto opacity-50 grayscale hover:grayscale-0 transition-all duration-300 mb-2">
+                <div class="text-[#4A4E55] text-sm">
+                    &copy; {{ date('Y') }} Contractor Specialties. The standard of excellence.
+                </div>
             </div>
             <div class="flex space-x-6 text-sm text-gray-400">
                 <a href="/join" class="hover:text-[#F15A29] transition-colors">Contractors: Join the Network</a>
