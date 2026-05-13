@@ -37,23 +37,24 @@
     <title>{{ $business_name }} | {{ $specialty }} in {{ $city }}, {{ $state }}</title>
     <meta name="description" content="Contact {{ $business_name }} directly. Local {{ $primary_trade }} serving a {{ $service_radius_miles }}-mile radius around {{ $city }}. Licensed, insured, and verified.">
     
+    <!-- THE SEO CHEAT CODE: Escaped with @@ so Laravel ignores it -->
     <script type="application/ld+json">
     {
-      "@context": "https://schema.org",
-      "@type": "HomeAndConstructionBusiness",
+      "@@context": "https://schema.org",
+      "@@type": "HomeAndConstructionBusiness",
       "name": "{{ $business_name }}",
       "telephone": "{{ $phone_formatted }}",
       "address": {
-        "@type": "PostalAddress",
+        "@@type": "PostalAddress",
         "streetAddress": "{{ $street_address }}",
         "addressLocality": "{{ $city }}",
         "addressRegion": "{{ $state }}",
         "postalCode": "{{ $zip }}"
       },
       "areaServed": {
-        "@type": "GeoCircle",
+        "@@type": "GeoCircle",
         "geoMidpoint": {
-            "@type": "GeoCoordinates",
+            "@@type": "GeoCoordinates",
             "latitude": "40.4167", 
             "longitude": "-86.8753"
         },
