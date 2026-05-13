@@ -1,6 +1,5 @@
 @php
     // FAKE DATABASE FOR MOCKUP PURPOSES
-    // Once we build the DB, these will be passed directly from the Controller
     $business_name = $business_name ?? 'Apex Roofing & Exteriors';
     $primary_trade = $primary_trade ?? 'Roofing Contractor';
     $specialty = $specialty ?? 'Residential Roof Replacement & Repair';
@@ -25,7 +24,7 @@
         'Seamless Gutter Systems'
     ];
     
-    // The contractor's chosen accent color (Defaults to Safety Orange if null)
+    // The contractor's chosen accent color
     $brand_color = $brand_color ?? '#F15A29';
 @endphp
 
@@ -35,11 +34,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Programmatic SEO Meta Tags -->
     <title>{{ $business_name }} | {{ $specialty }} in {{ $city }}, {{ $state }}</title>
     <meta name="description" content="Contact {{ $business_name }} directly. Local {{ $primary_trade }} serving a {{ $service_radius_miles }}-mile radius around {{ $city }}. Licensed, insured, and verified.">
     
-    <!-- THE SEO CHEAT CODE: Invisible JSON-LD Schema for Google -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -77,7 +74,6 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Dynamic Brand Accents injected from DB */
         .brand-bg { background-color: {{ $brand_color }}; }
         .brand-text { color: {{ $brand_color }}; }
         .brand-border { border-color: {{ $brand_color }}; }
@@ -86,7 +82,6 @@
 </head>
 <body class="bg-gray-50 text-[#4A4E55] antialiased pb-20">
     
-    <!-- Minimalist Network Header -->
     <div class="bg-[#021d48] py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center text-sm shadow-md">
         <a href="/" class="text-gray-300 hover:text-white flex items-center gap-2 transition-colors">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,16 +97,13 @@
         </span>
     </div>
 
-    <!-- Hero / Header Section -->
     <div class="bg-white border-b border-gray-200 shadow-sm relative z-10">
-        <!-- DB: cover_photo_path goes here -->
         <div class="h-32 sm:h-48 w-full bg-[#4A4E55] relative overflow-hidden">
             <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
         </div>
         
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative pb-8">
             <div class="sm:flex sm:items-end sm:space-x-5">
-                <!-- Avatar / Logo (DB: logo_path) -->
                 <div class="relative -mt-16 sm:-mt-24 flex items-center justify-center h-32 w-32 rounded-2xl ring-4 ring-white bg-white shadow-md overflow-hidden shrink-0 brand-border border-b-4">
                     <span class="text-4xl font-black text-[#021d48]">{{ substr($business_name, 0, 1) }}</span>
                 </div>
@@ -126,7 +118,6 @@
                         </p>
                     </div>
                     
-                    <!-- Primary CTA -->
                     <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                         <a href="tel:{{ $phone }}" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-bold rounded-lg shadow-lg text-white brand-bg hover:opacity-90 transition-all transform hover:-translate-y-0.5">
                             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,13 +139,10 @@
         </div>
     </div>
 
-    <!-- Main Content Area -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- Left Column: Details -->
             <div class="md:col-span-2 space-y-8">
-                <!-- About Section -->
                 <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <h2 class="text-xl font-bold text-[#021d48] border-b border-gray-100 pb-4 mb-4">About the Business</h2>
                     <div class="prose prose-blue text-[#4A4E55] leading-relaxed">
@@ -162,7 +150,6 @@
                     </div>
                 </section>
 
-                <!-- Core Services (Generated from JSON Array) -->
                 <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <h2 class="text-xl font-bold text-[#021d48] border-b border-gray-100 pb-4 mb-4">Specialized Services</h2>
                     <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -178,9 +165,7 @@
                 </section>
             </div>
 
-            <!-- Right Column: Trust Signals & Meta (Powered by DB Booleans) -->
             <div class="space-y-6">
-                <!-- Trust Card -->
                 <div class="bg-[#021d48] rounded-2xl p-6 text-white shadow-md border-t-4 brand-border">
                     <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
                         <svg class="h-5 w-5 brand-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,7 +207,6 @@
                     </ul>
                 </div>
 
-                <!-- Location / Service Area -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <h3 class="text-lg font-bold text-[#021d48] mb-4">Service Area</h3>
                     <div class="flex items-start text-[#4A4E55] text-sm">
@@ -241,7 +225,6 @@
         </div>
     </div>
 
-    <!-- Fixed Bottom CTA (Mobile Only) -->
     <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden z-50">
         <a href="tel:{{ $phone }}" class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-bold rounded-lg text-white brand-bg shadow-lg">
             Call Now: {{ $phone_formatted }}
