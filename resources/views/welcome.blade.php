@@ -21,18 +21,31 @@
 </head>
 <body class="bg-[#FFFFFF] text-[#4A4E55] antialiased selection:bg-[#F15A29] selection:text-white flex flex-col min-h-screen">
     
-    <!-- Navigation -->
+    <!-- 🚧 TEMP DEV/TEST NAV BAR 🚧 -->
+    <div class="bg-yellow-400 text-yellow-900 px-4 py-2 text-xs sm:text-sm font-bold flex flex-wrap justify-center gap-4 sm:gap-6 border-b border-yellow-500 z-50">
+        <span class="uppercase tracking-wider opacity-70 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+            Dev Tools:
+        </span>
+        <a href="/" class="hover:text-black underline decoration-yellow-600 underline-offset-2">Home</a>
+        <a href="/contractors" class="hover:text-black underline decoration-yellow-600 underline-offset-2">Directory Search</a>
+        <a href="/pro/apex-roofing" class="hover:text-black underline decoration-yellow-600 underline-offset-2">Mock Profile</a>
+        <a href="/join" class="hover:text-black underline decoration-yellow-600 underline-offset-2">Magic Link Join</a>
+        <a href="/dashboard" class="hover:text-black underline decoration-yellow-600 underline-offset-2">Protected Dashboard</a>
+    </div>
+    <!-- 🚧 END DEV/TEST NAV BAR 🚧 -->
+
+    <!-- Main Navigation -->
     <nav class="bg-[#021d48] shadow-md border-b border-[#4A4E55]/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-28"> <!-- Taller nav to accommodate the 20% larger logo -->
+            <div class="flex justify-between h-28"> 
                 <div class="flex items-center py-2">
-                    <!-- Brand Logo Image (Increased from h-16 to h-20) -->
                     <a href="/" class="flex items-center">
                         <img src="{{ asset('images/logo.webp') }}" alt="Contractor Specialties Logo" class="h-20 w-auto object-contain">
                     </a>
                 </div>
                 <div class="flex items-center space-x-6">
-                    <a href="/directory" class="text-gray-300 hover:text-white font-semibold transition-colors duration-200">Find a Specialist</a>
+                    <a href="/contractors" class="text-gray-300 hover:text-white font-semibold transition-colors duration-200">Find a Specialist</a>
                     <a href="/join" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 rounded-lg shadow-sm text-sm font-bold text-white bg-[#4A4E55] hover:bg-[#F15A29] transition-all duration-200">
                         Contractor Login
                     </a>
@@ -41,7 +54,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section (Clean, no distracting watermark) -->
+    <!-- Hero Section -->
     <main class="flex-grow flex items-center justify-center relative overflow-hidden bg-[#FFFFFF] border-b border-gray-100">
         <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
             <div class="text-center max-w-4xl mx-auto">
@@ -59,7 +72,7 @@
                 </p>
                 
                 <div class="mt-10 max-w-xl mx-auto sm:flex sm:justify-center md:mt-12 space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="/directory" class="w-full flex items-center justify-center px-8 py-4 text-lg font-bold rounded-lg text-white bg-[#F15A29] hover:bg-[#d94e22] md:py-5 md:text-xl transition-all duration-200 shadow-lg shadow-[#F15A29]/30 transform hover:-translate-y-0.5">
+                    <a href="/contractors" class="w-full flex items-center justify-center px-8 py-4 text-lg font-bold rounded-lg text-white bg-[#F15A29] hover:bg-[#d94e22] md:py-5 md:text-xl transition-all duration-200 shadow-lg shadow-[#F15A29]/30 transform hover:-translate-y-0.5">
                         Browse the Network
                     </a>
                     <a href="#our-standard" class="w-full flex items-center justify-center px-8 py-4 border-2 border-[#1E2A38]/10 text-lg font-bold rounded-lg text-[#1E2A38] bg-white hover:bg-gray-50 md:py-5 md:text-xl transition-all duration-200">
@@ -119,7 +132,6 @@
     <footer class="bg-[#021d48] border-t border-[#4A4E55]/30 mt-auto">
         <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="flex flex-col items-center md:items-start mb-4 md:mb-0">
-                <!-- Filters removed so the background color blends perfectly -->
                 <img src="{{ asset('images/logo.webp') }}" alt="Contractor Specialties" class="h-10 w-auto mb-2">
                 <div class="text-[#4A4E55] text-sm mt-2">
                     &copy; {{ date('Y') }} Contractor Specialties. The standard of excellence.

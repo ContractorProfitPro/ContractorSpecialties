@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MagicLinkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,11 @@ Route::get('/contractors', function () {
     return view('directory.index');
 })->name('directory.index');
 
+// Hardcoded test profile (You can use this to view the mockup UI)
+Route::get('/pro/apex-roofing', function () {
+    return view('directory.profile');
+});
+
 // Programmatic SEO: Individual Automated Profiles
 Route::get('/pro/{slug}', function ($slug) {
     // We will wire this to the database later, using 'sc_' or standard prefix
@@ -32,11 +38,12 @@ Route::get('/join', function () {
 })->name('onboarding.join');
 
 // Endpoint to handle the Magic Link generation
-Route::post('/join/magic-link', function () {
-    // Logic will go here to generate the token and fire the email
-    return back()->with('status', 'Magic link sent!');
-})->name('onboarding.magic');
+Route::post('/join/magic-link', [MagicLinkController::class, 'sendLink'])->name('onboarding.magic');
 
-Route::get('/pro/apex-roofing', function () {
-    return view('directory.profile');
-});
+// Endpoint to verify the Magic Link token from the email
+Route::get('/verify-magic-link/{token}', [MagicLinkController::class, 'verify'])->name('onboarding.verify');
+
+// 4. Contractor Dashboard (Protected by Auth Middleware)
+Route::middleware('auth')->get('/dashboard', function () {
+    return 'Welcome to the Builder! Your Magic Link worked.';
+})->name('dashboard');
