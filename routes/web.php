@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MagicLinkController;
+use App\Http\Controllers\ContractorProfileController; // <-- Added our new Dynamic Engine
 
 /*
 |--------------------------------------------------------------------------
@@ -20,16 +21,8 @@ Route::get('/contractors', function () {
     return view('directory.index');
 })->name('directory.index');
 
-// Hardcoded test profile (You can use this to view the mockup UI)
-Route::get('/pro/apex-roofing', function () {
-    return view('directory.profile');
-});
-
-// Programmatic SEO: Individual Automated Profiles
-Route::get('/pro/{slug}', function ($slug) {
-    // We will wire this to the database later, using 'sc_' or standard prefix
-    return view('directory.profile', ['slug' => $slug]);
-})->name('directory.profile');
+// Programmatic SEO: Individual Automated Profiles (Now wired to the database)
+Route::get('/pro/{slug}', [ContractorProfileController::class, 'show'])->name('profiles.show');
 
 // 3. Contractor Onboarding (Frictionless Entry)
 // Landing page to sell contractors on the free profile
