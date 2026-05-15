@@ -30,7 +30,7 @@ class ContractorProfileController extends Controller
         $phoneFormatted = $profile->phone; 
         
         // 4. Hand the data to our dynamic Blade engine
-        return view('profiles.show', [
+        return view('directory.profile', [
             'business_name' => $profile->business_name,
             'primary_trade' => $profile->primary_trade,
             'specialty' => $profile->specialty,
