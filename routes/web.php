@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MagicLinkController;
-use App\Http\Controllers\ContractorProfileController; // <-- Added our new Dynamic Engine
+use App\Http\Controllers\ContractorProfileController; 
+use App\Http\Controllers\Admin\FactoryController; // <-- Added the Factory Command Center
 
 /*
 |--------------------------------------------------------------------------
@@ -40,3 +41,9 @@ Route::get('/verify-magic-link/{token}', [MagicLinkController::class, 'verify'])
 Route::middleware('auth')->get('/dashboard', function () {
     return 'Welcome to the Builder! Your Magic Link worked.';
 })->name('dashboard');
+
+// 5. Admin Command Center (The Site Factory)
+// Note: In production, wrap this in an 'auth' middleware to protect your Empire!
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/factory', [FactoryController::class, 'index'])->name('factory.index');
+});
