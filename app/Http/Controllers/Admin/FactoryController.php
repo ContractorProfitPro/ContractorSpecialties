@@ -74,9 +74,7 @@ class FactoryController extends Controller
 
     public function deploy(Request $request, $id, PloiDeploymentService $deployer)
     {
-        // THE SPARK PLUG TEST
-        dd('THE BUTTON WORKS! PLOI API IS NEXT!', $id);
-
+        
         $contractor = DB::table('sc_contractor_profiles')->where('id', $id)->first();
         if (!$contractor) abort(404);
 
