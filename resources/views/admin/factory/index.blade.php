@@ -81,7 +81,7 @@
                                         </span>
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
-                                        <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit Brand</a>
+                                        <a href="{{ route('admin.factory.edit', $pro->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit Brand</a>
                                         @if(!$pro->has_standalone_site)
                                             <button type="button" class="text-[#F15A29] hover:text-orange-700 font-bold">Deploy Site</button>
                                         @else

@@ -43,7 +43,8 @@ Route::middleware('auth')->get('/dashboard', function () {
 })->name('dashboard');
 
 // 5. Admin Command Center (The Site Factory)
-// Note: In production, wrap this in an 'auth' middleware to protect your Empire!
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/factory', [FactoryController::class, 'index'])->name('factory.index');
+    Route::get('/factory/{id}/edit', [FactoryController::class, 'edit'])->name('factory.edit');
+    Route::post('/factory/{id}', [FactoryController::class, 'update'])->name('factory.update');
 });
