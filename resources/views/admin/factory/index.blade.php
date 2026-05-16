@@ -83,7 +83,14 @@
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
                                         <a href="{{ route('admin.factory.edit', $pro->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit Brand</a>
                                         @if(!$pro->has_standalone_site)
-                                            <button type="button" class="text-[#F15A29] hover:text-orange-700 font-bold">Deploy Site</button>
+                                            <form action="{{ route('admin.factory.deploy', $pro->id) }}" method="POST" class="inline-block m-0 p-0">
+                                                @csrf
+                                                <button type="submit" 
+                                                        onclick="return confirm('Are you sure you want to deploy a live site for {{ addslashes($pro->business_name) }}?');" 
+                                                        class="text-[#F15A29] hover:text-orange-700 font-bold bg-transparent border-none cursor-pointer">
+                                                    Deploy Site
+                                                </button>
+                                            </form>
                                         @else
                                             <a href="https://{{ $pro->standalone_domain ?? '#' }}" target="_blank" class="text-green-600 hover:text-green-900">View Site</a>
                                         @endif
