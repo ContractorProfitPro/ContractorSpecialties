@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MagicLinkController;
 use App\Http\Controllers\ContractorProfileController; 
-use App\Http\Controllers\Admin\FactoryController; // <-- Added the Factory Command Center
+use App\Http\Controllers\Admin\FactoryController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +22,7 @@ Route::get('/contractors', function () {
     return view('directory.index');
 })->name('directory.index');
 
-// Programmatic SEO: Individual Automated Profiles (Now wired to the database)
+// Programmatic SEO: Individual Automated Profiles 
 Route::get('/pro/{slug}', [ContractorProfileController::class, 'show'])->name('profiles.show');
 
 // 3. Contractor Onboarding (Frictionless Entry)
@@ -47,4 +47,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/factory', [FactoryController::class, 'index'])->name('factory.index');
     Route::get('/factory/{id}/edit', [FactoryController::class, 'edit'])->name('factory.edit');
     Route::post('/factory/{id}', [FactoryController::class, 'update'])->name('factory.update');
+    
+    // THE MISSING LINK: The Deploy Route
+    Route::post('/factory/{id}/deploy', [FactoryController::class, 'deploy'])->name('factory.deploy');
 });
