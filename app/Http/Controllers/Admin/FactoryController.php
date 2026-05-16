@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\PloiDeploymentService;
 
 class FactoryController extends Controller
 {
@@ -69,5 +70,31 @@ class FactoryController extends Controller
         ]);
 
         return redirect()->route('admin.factory.index')->with('success', 'Brand payload updated successfully! Contractor is now Premium.');
+    }
+
+    public function deploy(Request $request, $id, PloiDeploymentService $deployer)
+    {
+        // THE SPARK PLUG TEST
+        dd('THE BUTTON WORKS! PLOI API IS NEXT!', $id);
+
+        $contractor = DB::table('sc_contractor_profiles')->where('id', $id)->first();
+        if (!$contractor) abort(404);
+
+        try {
+            // Trigger the Ploi API
+            $siteUrl = $deployer->createTenantSite($contractor);
+
+            // Update database to show it's live
+            DB::table('sc_contractor_profiles')->where('id', $id)->update([
+                'has_standalone_site' => 1,
+                'domain' => $siteUrl,
+                'updated_at' => now(),
+            ]);
+
+            return redirect()->route('admin.factory.index')->with('success', 'Site deployed successfully at ' . $siteUrl);
+            
+        } catch (\Exception $e) {
+            return redirect()->route('admin.factory.index')->with('error', 'Deployment failed: ' . $e->getMessage());
+        }
     }
 }
