@@ -35,6 +35,8 @@ class PloiDeploymentService
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites", [
                 'root_domain' => $domain,
+                'web_directory' => '/public',
+                'project_root' => '/',
             ]);
 
         // 3. Catch any errors if Ploi's bouncer rejects the request
