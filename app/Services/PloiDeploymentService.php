@@ -44,7 +44,20 @@ class PloiDeploymentService
             throw new Exception('Ploi API Error: ' . $response->body());
         }
 
-        // 4. Return the new domain so the Command Center database can save it!
+        // 4. Catch the specific Site ID that Ploi just created
+        $siteId = $response->json('data.id');
+
+        // 5. Fire the second API call to request the Let's Encrypt SSL
+        $sslResponse = Http::withToken($this->apiToken)
+            ->acceptJson()
+            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/certificates", [
+                'type' => 'letsencrypt'
+            ]);
+
+        // Note: We don't throw an exception if the SSL fails right now, 
+        // because we still want to save the domain to the database even if the Let's Encrypt bot is slow.
+        
+        // 6. Return the new domain so the Command Center database can save it!
         return $domain;
     }
 }
