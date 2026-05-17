@@ -47,25 +47,12 @@ class PloiDeploymentService
 
         $siteId = $response->json('data.id');
 
-        // 2. Install the Git Repository FIRST (Into a perfectly clean, untouched folder)
-        $repoResponse = Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->asJson() 
-            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/repository", [
-                'provider' => $this->gitProvider,
-                'name' => $this->templateRepo, 
-                'repository' => $this->templateRepo, 
-                'branch' => 'main',
-            ]);
-
-        if ($repoResponse->failed()) {
-             Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
-        }
-
-        // --- THE GHOST WORKER ---
+        // --- THE FULL STAGGERED GHOST PIPELINE ---
         $apiToken = $this->apiToken;
         $baseUrl = $this->baseUrl;
         $serverId = $this->serverId;
+        $gitProvider = $this->gitProvider;
+        $templateRepo = $this->templateRepo;
         
         $envContent = implode("\n", [
             'CONTRACTOR_NAME="' . addslashes($contractor->business_name) . '"',
@@ -75,19 +62,35 @@ class PloiDeploymentService
             'CONTRACTOR_STATE="' . addslashes($contractor->state ?? '') . '"',
         ]);
 
-        dispatch(function () use ($apiToken, $baseUrl, $serverId, $siteId, $envContent, $domain) {
+        dispatch(function () use ($apiToken, $baseUrl, $serverId, $siteId, $envContent, $domain, $gitProvider, $templateRepo) {
             
-            // Wait 12 seconds for Git to completely finish unpacking
-            sleep(12);
+            // PHASE 1: Let Ploi finish building the physical folders and Nginx configs
+            sleep(8);
 
-            // 3. Inject Environment Variables
+            // PHASE 2: Install the Git Repository
+            $repoResponse = Http::withToken($apiToken)
+                ->acceptJson()
+                ->post("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/repository", [
+                    'provider' => $gitProvider,
+                    'name' => $templateRepo, 
+                    'branch' => 'main',
+                ]);
+
+            if ($repoResponse->failed()) {
+                 Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
+            }
+
+            // PHASE 3: Let Git finish unpacking the blueprint
+            sleep(8);
+
+            // PHASE 4: Inject Environment Variables
             Http::withToken($apiToken)
                 ->acceptJson()
                 ->patch("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/env", [
                     'content' => $envContent
                 ]);
 
-            // 4. Delete the generic index.html NOW that Git is done
+            // PHASE 5: Delete Ploi's generic index.html file
             Http::withToken($apiToken)
                 ->acceptJson()
                 ->post("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/commands", [
@@ -95,7 +98,7 @@ class PloiDeploymentService
                     'user' => 'ploi'
                 ]);
 
-            // 5. Request the SSL
+            // PHASE 6: Request the SSL Certificate
             Http::withToken($apiToken)
                 ->acceptJson()
                 ->post("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/certificates", [
