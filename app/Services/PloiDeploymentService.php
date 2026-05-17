@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Exception;
 
@@ -18,18 +19,14 @@ class PloiDeploymentService
     {
         $this->apiToken = env('PLOI_API_TOKEN');
         $this->serverId = env('PLOI_SERVER_ID');
-        $this->gitProvider = env('PLOI_GIT_PROVIDER', 'github');
-        $this->templateRepo = env('PLOI_TEMPLATE_REPO');
+        $this->gitProvider = env('PLOI_GIT_PROVIDER') ?: 'github';
+        $this->templateRepo = env('PLOI_TEMPLATE_REPO') ?: 'ContractorProfitPro/contractor-blueprint';
     }
 
     public function createTenantSite($contractor)
     {
         if (!$this->apiToken || !$this->serverId) {
             throw new Exception('Ploi API keys are missing from the Command Center .env file.');
-        }
-
-        if (!$this->templateRepo) {
-            throw new Exception('Template repository is not defined in the .env file.');
         }
 
         $slug = Str::slug($contractor->business_name);
@@ -50,29 +47,22 @@ class PloiDeploymentService
 
         $siteId = $response->json('data.id');
 
-        // 2. Delete Ploi's default index.html BEFORE Git tries to pull
-        Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/commands", [
-                'command' => 'rm index.html', 
-                'user' => 'ploi'
-            ]);
-
-        // 3. Install the Git Repository
+        // 2. Install the Git Repository FIRST (Into a perfectly clean, untouched folder)
         $repoResponse = Http::withToken($this->apiToken)
             ->acceptJson()
+            ->asJson() 
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/repository", [
                 'provider' => $this->gitProvider,
                 'name' => $this->templateRepo, 
+                'repository' => $this->templateRepo, 
                 'branch' => 'main',
             ]);
 
         if ($repoResponse->failed()) {
-             \Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
+             Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
         }
 
-        // --- THE MAGIC HANDOFF ---
-        // We package the slow tasks into a background closure.
+        // --- THE GHOST WORKER ---
         $apiToken = $this->apiToken;
         $baseUrl = $this->baseUrl;
         $serverId = $this->serverId;
@@ -85,22 +75,25 @@ class PloiDeploymentService
             'CONTRACTOR_STATE="' . addslashes($contractor->state ?? '') . '"',
         ]);
 
-        // This runs AFTER your browser loads the success page, completely preventing a 502 timeout.
         dispatch(function () use ($apiToken, $baseUrl, $serverId, $siteId, $envContent, $domain) {
             
-            // Give Git a massive 12-second window to completely unpack without holding up the UI.
+            // Wait 12 seconds for Git to completely finish unpacking
             sleep(12);
 
-            // 4. Inject Environment Variables
-            $envResponse = Http::withToken($apiToken)
+            // 3. Inject Environment Variables
+            Http::withToken($apiToken)
                 ->acceptJson()
                 ->patch("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/env", [
                     'content' => $envContent
                 ]);
 
-            if ($envResponse->failed()) {
-                 \Log::error('Env Injection Failed for ' . $domain . ': ' . $envResponse->body());
-            }
+            // 4. Delete the generic index.html NOW that Git is done
+            Http::withToken($apiToken)
+                ->acceptJson()
+                ->post("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/commands", [
+                    'command' => 'rm index.html', 
+                    'user' => 'ploi'
+                ]);
 
             // 5. Request the SSL
             Http::withToken($apiToken)
