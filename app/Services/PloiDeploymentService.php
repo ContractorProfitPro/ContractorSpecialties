@@ -67,7 +67,7 @@ class PloiDeploymentService
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/repository", [
                 'provider' => $this->gitProvider,
-                'repository' => $this->templateRepo,
+                'name' => $this->templateRepo, // <-- THIS IS THE CRITICAL FIX
                 'branch' => 'main',
             ]);
 
