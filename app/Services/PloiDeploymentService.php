@@ -35,7 +35,7 @@ class PloiDeploymentService
         $slug = Str::slug($contractor->business_name);
         $domain = $slug . '.contractorspecialties.com';
 
-        // 1. Create the Physical Site 
+        // 1. Create the Physical Site
         $response = Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites", [
@@ -63,8 +63,7 @@ class PloiDeploymentService
              \Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
         }
 
-        // --- THE FIX: REDUCED TO 3 SECONDS ---
-        // Fast enough to prevent a 502 timeout, slow enough to let Git finish.
+        // 3-second pause for Git to unpack
         sleep(3);
 
         // 3. Inject Environment Variables
@@ -94,12 +93,14 @@ class PloiDeploymentService
                 'user' => 'ploi'
             ]);
 
-        // 5. Request the SSL
+        // 5. Request the SSL (COMMENTED OUT TO PREVENT 502 TIMEOUT)
+        /*
         Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/certificates", [
                 'type' => 'letsencrypt'
             ]);
+        */
 
         return $domain;
     }
