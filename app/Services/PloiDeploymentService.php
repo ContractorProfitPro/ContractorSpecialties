@@ -35,12 +35,12 @@ class PloiDeploymentService
         $slug = Str::slug($contractor->business_name);
         $domain = $slug . '.contractorspecialties.com';
 
-        // 1. Create the Physical Site (FIXED: web_directory is now the root)
+        // 1. Create the Physical Site
         $response = Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites", [
                 'root_domain' => $domain,
-                'web_directory' => '/', // <--- CHANGED FROM '/public'
+                'web_directory' => '/', 
                 'project_root' => '/',
             ]);
 
@@ -62,6 +62,11 @@ class PloiDeploymentService
         if ($repoResponse->failed()) {
              \Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
         }
+
+        // --- THE FIX: PAUSE FOR 8 SECONDS ---
+        // Give Git time to completely finish downloading the files 
+        // before we start modifying the folder contents.
+        sleep(8);
 
         // 3. Inject Environment Variables
         $envContent = implode("\n", [
@@ -86,7 +91,7 @@ class PloiDeploymentService
         Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/commands", [
-                'command' => 'rm index.html', // <--- CHANGED FROM 'rm public/index.html'
+                'command' => 'rm index.html', 
                 'user' => 'ploi'
             ]);
 
