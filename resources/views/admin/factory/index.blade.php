@@ -124,7 +124,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <a href="https://{{ $pro->standalone_domain ?? '#' }}" target="_blank" class="text-green-600 hover:text-green-900">View Site</a>
+                                            <a href="https://{{ $pro->domain ?? '#' }}" target="_blank" class="text-green-600 hover:text-green-900">View Site</a>
                                         @endif
                                     </td>
                                 </tr>

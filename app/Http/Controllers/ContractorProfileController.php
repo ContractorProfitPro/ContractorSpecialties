@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\PloiDeploymentService; // 1. Import our new factory engine
 
 class ContractorProfileController extends Controller
 {
@@ -51,5 +52,46 @@ class ContractorProfileController extends Controller
             // This is the magic payload that triggers the Mid-Century design
             'brand_settings' => $profile->brand_settings, 
         ]);
+    }
+
+    // --- NEW DEPLOYMENT METHOD --- //
+    
+    public function deploy($id, PloiDeploymentService $deploymentService)
+    {
+        // 1. Fetch the specific contractor by their ID
+        $profile = DB::table('sc_contractor_profiles')
+            ->where('id', $id)
+            ->first();
+
+        if (!$profile) {
+            return back()->with('error', 'Contractor profile not found.');
+        }
+
+        // Prevent accidental double-deployments
+        if ($profile->domain) {
+            return back()->with('error', 'This contractor already has a live site at ' . $profile->domain);
+        }
+
+        try {
+            // 2. Fire up the Factory! 
+            // We pass the profile to the service, and it hands us back the live URL.
+            $newDomain = $deploymentService->createTenantSite($profile);
+
+            // 3. Save the results back to the database
+            DB::table('sc_contractor_profiles')
+                ->where('id', $id)
+                ->update([
+                    'has_standalone_site' => 1,
+                    'domain' => $newDomain,
+                    'updated_at' => now(),
+                ]);
+
+            // 4. Return to the UI with a success message
+            return back()->with('success', "Deployment complete! Site is now live at https://{$newDomain}");
+
+        } catch (\Exception $e) {
+            // If the factory hits a snag (like the domain is already taken), display it cleanly
+            return back()->with('error', 'Deployment failed: ' . $e->getMessage());
+        }
     }
 }
