@@ -16,7 +16,6 @@ class PloiDeploymentService
 
     public function __construct()
     {
-        // Grabs your master keys from the .env file
         $this->apiToken = env('PLOI_API_TOKEN');
         $this->serverId = env('PLOI_SERVER_ID');
         $this->gitProvider = env('PLOI_GIT_PROVIDER', 'github');
@@ -25,7 +24,6 @@ class PloiDeploymentService
 
     public function createTenantSite($contractor)
     {
-        // Safety check
         if (!$this->apiToken || !$this->serverId) {
             throw new Exception('Ploi API keys are missing from the Command Center .env file.');
         }
@@ -34,40 +32,30 @@ class PloiDeploymentService
             throw new Exception('Template repository is not defined in the .env file.');
         }
 
-        // 1. Generate the unique subdomain
         $slug = Str::slug($contractor->business_name);
         $domain = $slug . '.contractorspecialties.com';
 
-        // 2. Ping Ploi to create the physical site on the server
+        // 1. Create the Physical Site (FIXED: web_directory is now the root)
         $response = Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites", [
                 'root_domain' => $domain,
-                'web_directory' => '/public',
+                'web_directory' => '/', // <--- CHANGED FROM '/public'
                 'project_root' => '/',
             ]);
 
-        // Catch any errors if Ploi's bouncer rejects the request
         if ($response->failed()) {
             throw new Exception('Ploi Site Creation Error: ' . $response->body());
         }
 
-        // 3. Catch the specific Site ID that Ploi just created
         $siteId = $response->json('data.id');
 
-        // 4. Request the Let's Encrypt SSL
-        Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/certificates", [
-                'type' => 'letsencrypt'
-            ]);
-
-        // 5. Install the Git Repository into the new site
+        // 2. Install the Git Repository
         $repoResponse = Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/repository", [
                 'provider' => $this->gitProvider,
-                'name' => $this->templateRepo, // <-- THIS IS THE CRITICAL FIX
+                'name' => $this->templateRepo, 
                 'branch' => 'main',
             ]);
 
@@ -75,8 +63,7 @@ class PloiDeploymentService
              \Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
         }
 
-        // 6. Inject the specific Contractor's data into the new site's .env file
-        // We use addslashes to ensure any weird characters in the business name don't break the .env formatting
+        // 3. Inject Environment Variables
         $envContent = implode("\n", [
             'CONTRACTOR_NAME="' . addslashes($contractor->business_name) . '"',
             'CONTRACTOR_PHONE="' . addslashes($contractor->phone ?? '') . '"',
@@ -95,7 +82,21 @@ class PloiDeploymentService
              \Log::error('Env Injection Failed for ' . $domain . ': ' . $envResponse->body());
         }
 
-        // 7. Return the new domain so the Command Center database can save it
+        // 4. Delete Ploi's default index.html file from the ROOT directory
+        Http::withToken($this->apiToken)
+            ->acceptJson()
+            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/commands", [
+                'command' => 'rm index.html', // <--- CHANGED FROM 'rm public/index.html'
+                'user' => 'ploi'
+            ]);
+
+        // 5. Request the SSL
+        Http::withToken($this->apiToken)
+            ->acceptJson()
+            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/certificates", [
+                'type' => 'letsencrypt'
+            ]);
+
         return $domain;
     }
 }
