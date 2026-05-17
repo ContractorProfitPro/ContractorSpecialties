@@ -50,7 +50,15 @@ class PloiDeploymentService
 
         $siteId = $response->json('data.id');
 
-        // 2. Install the Git Repository
+        // 2. Delete Ploi's default index.html BEFORE Git tries to pull
+        Http::withToken($this->apiToken)
+            ->acceptJson()
+            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/commands", [
+                'command' => 'rm index.html', 
+                'user' => 'ploi'
+            ]);
+
+        // 3. Install the Git Repository
         $repoResponse = Http::withToken($this->apiToken)
             ->acceptJson()
             ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/repository", [
@@ -63,10 +71,12 @@ class PloiDeploymentService
              \Log::error('Git Install Failed for ' . $domain . ': ' . $repoResponse->body());
         }
 
-        // 3-second pause for Git to unpack
-        sleep(3);
-
-        // 3. Inject Environment Variables
+        // --- THE MAGIC HANDOFF ---
+        // We package the slow tasks into a background closure.
+        $apiToken = $this->apiToken;
+        $baseUrl = $this->baseUrl;
+        $serverId = $this->serverId;
+        
         $envContent = implode("\n", [
             'CONTRACTOR_NAME="' . addslashes($contractor->business_name) . '"',
             'CONTRACTOR_PHONE="' . addslashes($contractor->phone ?? '') . '"',
@@ -75,32 +85,31 @@ class PloiDeploymentService
             'CONTRACTOR_STATE="' . addslashes($contractor->state ?? '') . '"',
         ]);
 
-        $envResponse = Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->patch("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/env", [
-                'content' => $envContent
-            ]);
+        // This runs AFTER your browser loads the success page, completely preventing a 502 timeout.
+        dispatch(function () use ($apiToken, $baseUrl, $serverId, $siteId, $envContent, $domain) {
+            
+            // Give Git a massive 12-second window to completely unpack without holding up the UI.
+            sleep(12);
 
-        if ($envResponse->failed()) {
-             \Log::error('Env Injection Failed for ' . $domain . ': ' . $envResponse->body());
-        }
+            // 4. Inject Environment Variables
+            $envResponse = Http::withToken($apiToken)
+                ->acceptJson()
+                ->patch("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/env", [
+                    'content' => $envContent
+                ]);
 
-        // 4. Delete Ploi's default index.html file from the ROOT directory
-        Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/commands", [
-                'command' => 'rm index.html', 
-                'user' => 'ploi'
-            ]);
+            if ($envResponse->failed()) {
+                 \Log::error('Env Injection Failed for ' . $domain . ': ' . $envResponse->body());
+            }
 
-        // 5. Request the SSL (COMMENTED OUT TO PREVENT 502 TIMEOUT)
-        /*
-        Http::withToken($this->apiToken)
-            ->acceptJson()
-            ->post("{$this->baseUrl}/servers/{$this->serverId}/sites/{$siteId}/certificates", [
-                'type' => 'letsencrypt'
-            ]);
-        */
+            // 5. Request the SSL
+            Http::withToken($apiToken)
+                ->acceptJson()
+                ->post("{$baseUrl}/servers/{$serverId}/sites/{$siteId}/certificates", [
+                    'type' => 'letsencrypt'
+                ]);
+
+        })->afterResponse();
 
         return $domain;
     }
